@@ -159,42 +159,43 @@ class CurlRequest implements IRequestDownloader
 
     protected function tryThrowSpecificException(string $errorMsg, int $errorNum): void
     {
-        // TODO: better do check on $errorNum
-
-        if (strpos($errorMsg, 'bind failed with errno') === 0) {
-            throw new Exception\Specific\BindAddressFailedException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, 'Failed to connect to') === 0) {
-            throw new Exception\Specific\ConnectionRefusedException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, 'Connection timed out after') === 0) {
-            throw new Exception\Specific\ConnectionTimeoutException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, "Couldn't resolve host") === 0) {
-            throw new Exception\Specific\CouldNotResolveHostException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, "Empty reply from server") === 0) {
-            throw new Exception\Specific\EmptyReplyFromServerException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, "Operation timed out after") === 0) {
-            throw new Exception\Specific\OperationTimeoutException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, "Recv failure") === 0) {
-            throw new Exception\Specific\ReceiveFailureException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, "Unknown SSL protocol error") === 0) {
-            throw new Exception\Specific\SSLException($errorMsg, $errorNum);
-        }
-
-        if (strpos($errorMsg, "Illegal characters found in URL") === 0) {
-            throw new Exception\Specific\UrlIllegaCharacterException($errorMsg, $errorNum);
+        // https://curl.se/libcurl/c/libcurl-errors.html
+        switch ($errorNum) {
+            case 3:
+                throw new Exception\Specific\UrlIllegaCharacterException($errorMsg, $errorNum);
+            case 6:
+                throw new Exception\Specific\CouldNotResolveHostException($errorMsg, $errorNum);
+            case 7:
+                throw new Exception\Specific\ConnectionRefusedException($errorMsg, $errorNum);
+            case 28:
+                if (strpos($errorMsg, 'Connection timed out after') === 0) {
+                    throw new Exception\Specific\ConnectionTimeoutException($errorMsg, $errorNum);
+                }
+                throw new Exception\Specific\OperationTimeoutException($errorMsg, $errorNum);
+            case 38:
+            case 45:
+                throw new Exception\Specific\BindAddressFailedException($errorMsg, $errorNum);
+            case 52:
+                throw new Exception\Specific\EmptyReplyFromServerException($errorMsg, $errorNum);
+            case 56:
+                throw new Exception\Specific\ReceiveFailureException($errorMsg, $errorNum);
+            case 35:
+            case 53:
+            case 54:
+            case 58:
+            case 59:
+            case 60:
+            case 64:
+            case 66:
+            case 77:
+            case 80:
+            case 82:
+            case 83:
+            case 90:
+            case 91:
+            case 96:
+            case 98:
+                throw new Exception\Specific\SSLException($errorMsg, $errorNum);
         }
 
         throw new CurlException($errorMsg, $errorNum);
