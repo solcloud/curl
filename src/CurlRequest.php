@@ -60,6 +60,9 @@ class CurlRequest implements IRequestDownloader
         $response->setStatusCode(curl_getinfo($ch, CURLINFO_HTTP_CODE));
         $response->setRealUrl(curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
         $response->setLastIp(curl_getinfo($ch, CURLINFO_PRIMARY_IP));
+        if ($request->shouldIncludeCertificatesInfo()) {
+            $response->setCertificates(curl_getinfo($ch, CURLINFO_CERTINFO));
+        }
 
         $response->setAllHeaders($allHeaders);
         $response->setBody($curlResult);
@@ -146,7 +149,10 @@ class CurlRequest implements IRequestDownloader
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, $request->getRequestTimeoutMs());
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $request->getFollowLocation());
         curl_setopt($ch, CURLOPT_USERAGENT, $request->getUserAgent());
-        if ($request->getReferer() !== NULL) {
+        if ($request->shouldIncludeCertificatesInfo()) {
+            curl_setopt($ch, CURLOPT_CERTINFO, 1);
+        }
+        if ($request->getReferer() !== null) {
             curl_setopt($ch, CURLOPT_REFERER, $request->getReferer());
         }
 
